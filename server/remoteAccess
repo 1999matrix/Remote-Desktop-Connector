@@ -1,0 +1,51 @@
+const { screen, mouse, keyboard } = require("@nut-tree-fork/nut-js");
+const machineId = require('node-machine-id');
+
+class RemoteAccess {
+  constructor() {
+    this.screenStream = null;
+    this.configureNut();
+  }
+
+  configureNut() {
+    screen.config.autoHighlight = false;
+    mouse.config.autoDelayMs = 100;
+    keyboard.config.autoDelayMs = 100;
+  }
+
+  async startCapture() {
+    const screenSize = await screen.dimensions();
+    
+    return new Promise((resolve) => {
+      this.screenStream = setInterval(async () => {
+        const screenshot = await screen.capture(0, 0, screenSize.width, screenSize.height);
+        resolve(screenshot.toBuffer());
+      }, 50);
+    });
+  }
+
+  async handleMouseControl(x, y, action) {
+    await mouse.setPosition({ x, y });
+    if (action === 'click') {
+      await mouse.leftClick();
+    } else if (action === 'rightClick') {
+      await mouse.rightClick();
+    }
+  }
+
+  async handleKeyboardInput(text) {
+    await keyboard.type(text);
+  }
+
+  stopCapture() {
+    if (this.screenStream) {
+      clearInterval(this.screenStream);
+    }
+  }
+
+  async getMachineId() {
+    return await machineId.machineId();
+  }
+}
+
+module.exports = RemoteAccess;

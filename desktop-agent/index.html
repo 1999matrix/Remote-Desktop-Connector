@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screen Capture Agent</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+            margin: 0;
+            user-select: none;
+        }
+
+        .container {
+            max-width: 350px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 18px;
+            margin: 0 0 20px 0;
+            text-align: center;
+        }
+
+        .status-container {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+        }
+
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .status-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-label {
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .status-value {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .connected {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .capture-active {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        .capture-inactive {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .start-btn {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .start-btn:hover:not(:disabled) {
+            background-color: #218838;
+        }
+
+        .stop-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .stop-btn:hover:not(:disabled) {
+            background-color: #c82333;
+        }
+
+        .last-capture {
+            font-size: 12px;
+            color: #6c757d;
+            text-align: center;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Screen Capture Agent</h1>
+        
+        <div class="status-container">
+            <div class="status-row">
+                <span class="status-label">Connection:</span>
+                <span id="connection-status" class="status-value disconnected">Disconnected</span>
+            </div>
+            <div class="status-row">
+                <span class="status-label">Capture Status:</span>
+                <span id="capture-status" class="status-value capture-inactive">Inactive</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="start-capture" class="start-btn">Start Capture</button>
+            <button id="stop-capture" class="stop-btn" disabled>Stop Capture</button>
+        </div>
+
+        <div class="last-capture" id="last-capture">Last capture: Never</div>
+    </div>
+
+    <script>
+        let isConnected = false;
+        let isCapturing = false;
+
+        // Connect these functions to your main process using IPC
+        document.getElementById('start-capture').addEventListener('click', () => {
+            isCapturing = true;
+            updateUI();
+        });
+
+        document.getElementById('stop-capture').addEventListener('click', () => {
+            isCapturing = false;
+            updateUI();
+        });
+
+        function updateUI() {
+            const connectionStatus = document.getElementById('connection-status');
+            const captureStatus = document.getElementById('capture-status');
+            const startBtn = document.getElementById('start-capture');
+            const stopBtn = document.getElementById('stop-capture');
+
+            // Update connection status
+            connectionStatus.textContent = isConnected ? 'Connected' : 'Disconnected';
+            connectionStatus.className = `status-value ${isConnected ? 'connected' : 'disconnected'}`;
+
+            // Update capture status
+            captureStatus.textContent = isCapturing ? 'Active' : 'Inactive';
+            captureStatus.className = `status-value ${isCapturing ? 'capture-active' : 'capture-inactive'}`;
+
+            // Update buttons
+            startBtn.disabled = isCapturing || !isConnected;
+            stopBtn.disabled = !isCapturing || !isConnected;
+        }
+
+        function updateLastCapture() {
+            const lastCapture = document.getElementById('last-capture');
+            lastCapture.textContent = `Last capture: ${new Date().toLocaleTimeString()}`;
+        }
+
+        // Initial UI update
+        updateUI();
+    </script>
+</body>
+</html>
